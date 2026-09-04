@@ -6,9 +6,11 @@
 
 采用 **DeepSeek-V4-Flash-Vision-Exp** 和 **DeepSeek-V4-Pro** 制作，思考等级均为MAX。
 
-并由Agent： **Deepseek HARNESS** 辅助制作。
+该项目前期由Agent： **Deepseek HARNESS** 构建主体。后期由 **CodeX（换脑DS V4Flash）** 修复BUG、上传项目至GitHub
 
-开发此项目时，在Agent（智能体）上面耗费了极大的金额（11.90CNY）。
+开发此项目时，在DSH上面耗费了极大的金额（11.90CNY）。
+
+（其实本来不想用CodeX的，后面DSH不好使才用CodeX修BUG。只不过我懒得去看和改这个屎山Readme了，我将用最一针见血最直白最明了最清晰的语音告诉你：CodeX又花了4块钱左右，总计约15块钱）
 
 其中金额花费如下：
 
@@ -22,19 +24,17 @@ Token（词元）消耗如下（非高峰期）：
 
 ![PixPin_2026-08-30_23-42-01](READMESTUPIC/PixPin_2026-08-30_23-42-01.png)
 
-其中V4-Flash构建主题，V4-Pro修正BUG。也不知道“吃”了多少Token。
-
-总结：Pro虽仅调用了一次，但不可避免地使该项目的资金超出预算的100%。
+其中V4-Flash构建主题，V4-Pro修正BUG。Pro只用了一次对话就吃了这么多钱。不可避免地使该项目的资金超出预算的100%。
 
 ## 效果展示
 
-
+抖音搜MJ第一个视频就是。
 
 ## 其他
 
 以下内容由AI所撰。
 
-我太久没动代码我也不知道AI写得啥。更不知道AI时怎么实现的了。前两个项目好歹看得懂代码还会改点BUG，而且项目也是自己部署的，连Github也是自己上传的。Agent真是太方便了你知道吗。
+我太久搞这些东西没我也不知道AI写得啥玩意。前两个项目好歹看得懂代码还会改点BUG，而且项目也是自己部署的，连Github也是自己上传的。现在跟傻福没区别了。Agent真是太方便了你知道吗。
 
 ## 聊天视频触发 (Chat Video Trigger · NeoForge)
 
