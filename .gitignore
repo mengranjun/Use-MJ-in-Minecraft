@@ -1,0 +1,22 @@
+# Gradle / build output
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Local toolchain (JDK 25, Gradle dist) and helper jars used only for this workspace build
+.toolchain/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# NeoForge dev run folder: auto-generated worlds, logs, screenshots, crash
+# reports and runtime caches. Do NOT publish these (your local files stay on disk).
+run/
+
+# OS
+Thumbs.db
+.DS_Store

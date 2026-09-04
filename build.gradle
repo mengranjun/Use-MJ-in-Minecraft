@@ -1,0 +1,81 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.144'
+}
+
+version = project.mod_version
+group = project.mod_group
+
+base {
+    archivesName = project.mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(project.java_version)
+
+neoForge {
+    version = project.neo_version
+
+    // Dev run configurations (runClient / runServer / runData)
+    runs {
+        client {
+            client()
+        }
+        server {
+            server()
+        }
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+        }
+    }
+
+    mods {
+        videotrigger {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+// Mirror for Mojang's own Maven (libraries.minecraft.net), which the sandboxed
+// network cannot reach directly. BMCLAPI serves the same artifacts. Scope it to
+// Mojang's own coordinates so it never shadows general Maven Central repositories.
+repositories {
+    maven {
+        url = 'https://bmclapi2.bangbang93.com/maven/'
+        content {
+            includeGroup 'com.mojang'
+            includeGroup 'net.minecraft'
+        }
+    }
+}
+
+dependencies {
+    // JCodec: pure-Java MP4 (H.264) decoding for clips with type "mp4".
+    implementation 'org.jcodec:jcodec:0.2.5'
+    implementation 'org.jcodec:jcodec-javase:0.2.5'
+    jarJar 'org.jcodec:jcodec:0.2.5'
+    jarJar 'org.jcodec:jcodec-javase:0.2.5'
+}
+
+// Expand the ${...} placeholders in META-INF/neoforge.mods.toml at build time
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version      : project.minecraft_version,
+            minecraft_version_range: project.minecraft_version_range,
+            neo_version            : project.neo_version,
+            neo_version_range      : project.neo_version_range,
+            loader_version_range   : project.loader_version_range,
+            mod_id                 : project.mod_id,
+            mod_name               : project.mod_name,
+            mod_license            : project.mod_license,
+            mod_version            : project.mod_version,
+            mod_authors            : project.mod_authors,
+            mod_description        : project.mod_description,
+    ]
+    inputs.properties replaceProperties
+    // Only substitute inside the mod metadata file. A blanket expand() would also
+    // run over binary resources (mp4/png assets) and corrupt them.
+    filesMatching('**/neoforge.mods.toml') {
+        expand replaceProperties
+    }
+}
