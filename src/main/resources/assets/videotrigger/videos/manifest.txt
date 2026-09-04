@@ -1,8 +1,10 @@
 # Bundled video files (one relative path per line) shipped inside the mod jar.
 # These are copied into config/videotrigger/videos/ on first run so they load
 # normally. Add new files here (and under this folder) to bundle more.
-example/8月31日.mp4
-example/8月31日-副本.mp4
+example/MJHP(1).mp4
+example/MJHP(1).wav
+example/MJXX.mp4
+example/MJXX.wav
 JustAI/frame_0000.png
 JustAI/frame_0001.png
 JustAI/frame_0002.png

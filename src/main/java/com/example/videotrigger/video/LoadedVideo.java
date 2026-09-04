@@ -2,6 +2,7 @@ package com.example.videotrigger.video;
 
 import com.mojang.blaze3d.platform.NativeImage;
 
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -17,8 +18,11 @@ public final class LoadedVideo implements AutoCloseable {
     public final double fps;
     public final boolean loop;
     public final String title;
+    /** Optional companion WAV holding the clip's audio (may be {@code null}). */
+    public final Path audioPath;
 
-    LoadedVideo(List<NativeImage> frames, int width, int height, double fps, boolean loop, String title) {
+    LoadedVideo(List<NativeImage> frames, int width, int height, double fps,
+                boolean loop, String title, Path audioPath) {
         this.frames = frames;
         this.width = width;
         this.height = height;
@@ -26,6 +30,7 @@ public final class LoadedVideo implements AutoCloseable {
         this.fps = fps > 0 ? fps : 20.0;
         this.loop = loop;
         this.title = title;
+        this.audioPath = audioPath;
     }
 
     public NativeImage frame(int index) {

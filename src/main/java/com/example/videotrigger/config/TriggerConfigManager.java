@@ -39,6 +39,12 @@ public final class TriggerConfigManager {
     public static final Path VIDEO_DIR = CONFIG_DIR.resolve("videos");
     /** Classpath root that holds the videos bundled inside the mod jar. */
     private static final String BUNDLED_VIDEOS_ROOT = "/assets/videotrigger/videos/";
+    /**
+     * Marker written the first time the bundled videos/sample are installed. After
+     * that the player owns the folder, so files they delete stay deleted instead of
+     * being re-copied from the jar on every launch.
+     */
+    private static final Path INSTALL_MARKER = CONFIG_DIR.resolve(".bundled_installed");
 
     private static VideoTriggerConfig cached;
     private static long lastModified = -1L;
@@ -153,10 +159,19 @@ public final class TriggerConfigManager {
         } catch (IOException e) {
             LOGGER.error("[videotrigger] Could not create config directories", e);
         }
-        // Install the videos the mod ships with (from the jar) into the config folder,
-        // so trigger configs that point at "videos/..." load out of the box.
-        installBundledVideos();
-        SampleAssets.ensureSamples(VIDEO_DIR);
+        // Install the videos the mod ships with (from the jar) into the config folder
+        // ONLY ONCE. After the first run, the player owns the folder: files they delete
+        // must not be re-created from the jar on later launches.
+        if (!Files.exists(INSTALL_MARKER)) {
+            installBundledVideos();
+            SampleAssets.ensureSamples(VIDEO_DIR);
+            try {
+                Files.createDirectories(CONFIG_DIR);
+                Files.writeString(INSTALL_MARKER, "installed-once", StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                LOGGER.error("[videotrigger] Could not write install marker", e);
+            }
+        }
         defaultsEnsured = true;
     }
 
@@ -208,11 +223,11 @@ public final class TriggerConfigManager {
         // A demonstrator entry so the mod does something out of the box.
         VideoTriggerConfig.Entry entry = new VideoTriggerConfig.Entry();
         entry.trigger = "MJ";
-        VideoTriggerConfig.Clip frames = new VideoTriggerConfig.Clip();
-        frames.type = "frames";
-        frames.path = "videos/JustAI";
-        frames.title = "JustAI";
-        entry.videos.add(frames);
+        VideoTriggerConfig.Clip clip = new VideoTriggerConfig.Clip();
+        clip.type = "mp4";
+        clip.path = "videos/example/MJHP(1).mp4";
+        clip.title = "MJ";
+        entry.videos.add(clip);
         cfg.triggers.add(entry);
         cfg.defaultFps = 20.0;
         return cfg;

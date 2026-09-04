@@ -4,6 +4,7 @@ import com.example.videotrigger.VideotriggerMod;
 import com.example.videotrigger.config.TriggerConfigManager;
 import com.example.videotrigger.config.VideoTriggerConfig;
 import com.example.videotrigger.video.LoadedVideo;
+import com.example.videotrigger.video.VideoAudio;
 import com.example.videotrigger.video.VideoPlayer;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
@@ -13,6 +14,8 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
+
+import javax.sound.sampled.Clip;
 
 /**
  * Draws the currently playing video on top of the game HUD (after vanilla GUI),
@@ -35,6 +38,7 @@ public class VideoOverlayRenderer {
     private double scale = 1.0;
     private int offsetX = 0;
     private int offsetY = 0;
+    private Clip audio;
 
     private VideoOverlayRenderer() {
     }
@@ -58,6 +62,9 @@ public class VideoOverlayRenderer {
         this.scale = Math.max(0.05, Math.min(1.0, cfg.scale));
         this.offsetX = cfg.overlayOffsetX;
         this.offsetY = cfg.overlayOffsetY;
+        // Play the clip's companion WAV alongside the video (fail-safe).
+        this.audio = VideoAudio.open(v.audioPath);
+        VideoAudio.start(this.audio);
     }
 
     /** Stops the overlay and releases all resources (called when the video finishes). */
@@ -68,6 +75,8 @@ public class VideoOverlayRenderer {
         }
         texture = null;
         lastFrame = -1;
+        VideoAudio.close(audio);
+        audio = null;
         if (video != null) {
             video.close();
         }
@@ -119,7 +128,7 @@ public class VideoOverlayRenderer {
         // Draw on top of the HUD with alpha blending: transparent parts of the
         // frame show the game through.
         gge.blit(RenderPipelines.GUI_TEXTURED, r.textureLoc, dx, dy,
-                0.0F, 0.0F, v.width, v.height, v.width, v.height);
+                0.0F, 0.0F, dw, dh, v.width, v.height, v.width, v.height);
     }
 
     private void ensureTexture() {

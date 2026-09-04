@@ -2,6 +2,7 @@ package com.example.videotrigger.client;
 
 import com.example.videotrigger.VideotriggerMod;
 import com.example.videotrigger.video.LoadedVideo;
+import com.example.videotrigger.video.VideoAudio;
 import com.example.videotrigger.video.VideoPlayer;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
@@ -11,6 +12,8 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+
+import javax.sound.sampled.Clip;
 
 /**
  * A full-screen overlay that renders the decoded video frames in real time.
@@ -31,12 +34,16 @@ public class VideoScreen extends Screen {
     private Identifier textureLoc;
     private int lastFrame = -1;
     private boolean closed;
+    private Clip audio;
 
     public VideoScreen(LoadedVideo video, boolean pause, double scale) {
         super(Component.literal(video.title != null ? video.title : "Video"));
         this.video = video;
         this.pause = pause;
         this.scale = Math.max(0.05, Math.min(1.0, scale));
+        // Play the clip's companion WAV alongside the video (fail-safe: no device -> silent video).
+        this.audio = VideoAudio.open(video.audioPath);
+        VideoAudio.start(this.audio);
     }
 
     @Override
@@ -86,7 +93,7 @@ public class VideoScreen extends Screen {
         // coordinates (u, v, uWidth, vHeight), so use the explicit pixel-based
         // overload with the texture's own dimensions.
         gge.blit(RenderPipelines.GUI_TEXTURED, textureLoc, dx, dy,
-                0.0F, 0.0F, video.width, video.height, video.width, video.height);
+                0.0F, 0.0F, dw, dh, video.width, video.height, video.width, video.height);
     }
 
     private void ensureTexture() {
@@ -120,6 +127,8 @@ public class VideoScreen extends Screen {
             textureLoc = null;
         }
         texture = null;
+        VideoAudio.close(audio);
+        audio = null;
         if (video != null) {
             video.close();
         }

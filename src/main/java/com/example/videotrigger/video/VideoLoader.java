@@ -125,7 +125,7 @@ public final class VideoLoader {
             if (frames.isEmpty()) {
                 throw new IOException("MP4 produced no decodable frames: " + mp4);
             }
-            return new LoadedVideo(frames, w, h, fps, loop, title);
+            return new LoadedVideo(frames, w, h, fps, loop, title, audioPathFor(mp4));
         } catch (IOException e) {
             closeFrames(frames);
             throw e;
@@ -188,7 +188,7 @@ public final class VideoLoader {
         if (frames.isEmpty()) {
             throw new IOException("No decodable image frames in " + dir);
         }
-        return new LoadedVideo(frames, w, h, fps, loop, title);
+        return new LoadedVideo(frames, w, h, fps, loop, title, null);
     }
 
     private static LoadedVideo loadGif(Path gif, double fps, boolean loop, String title) throws IOException {
@@ -237,7 +237,7 @@ public final class VideoLoader {
         if (frames.isEmpty()) {
             throw new IOException("GIF produced no decodable frames: " + gif);
         }
-        return new LoadedVideo(frames, w, h, fps, loop, title);
+        return new LoadedVideo(frames, w, h, fps, loop, title, null);
     }
 
     /** Converts a Java2D frame into a Minecraft {@link NativeImage}. */
@@ -250,15 +250,9 @@ public final class VideoLoader {
         NativeImage ni = new NativeImage(NativeImage.Format.RGBA, w, h, false);
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
-                int argb = bi.getRGB(x, y);
-                int r = (argb >>> 16) & 0xFF;
-                int g = (argb >>> 8) & 0xFF;
-                int b = argb & 0xFF;
-                int a = (argb >>> 24) & 0xFF;
-                // Minecraft's NativeImage stores pixels as ABGR-in-int (RGBA in memory
-                // on little-endian), matching GL_RGBA upload. Java2D getRGB() returns
-                // ARGB, so repack to match the native order.
-                ni.setPixel(x, y, (a << 24) | (b << 16) | (g << 8) | r);
+                // NativeImage.setPixel() expects an ARGB int (it converts to ABGR
+                // internally), and BufferedImage.getRGB() already returns ARGB.
+                ni.setPixel(x, y, bi.getRGB(x, y));
             }
         }
         return ni;
@@ -275,6 +269,22 @@ public final class VideoLoader {
     /** True if adding a {@code w x h} frame would exceed the total memory budget. */
     private static boolean overBudget(long totalBytes, int w, int h) {
         return totalBytes + (long) w * h * 4 > MAX_FRAME_MEMORY;
+    }
+
+    /**
+     * Derives the companion WAV (same base name, {@code .wav}) for a video/picture
+     * clip, so the mod can play the audio track. Returns {@code null} when the
+     * WAV is missing (audio then simply does not play).
+     */
+    private static Path audioPathFor(Path video) {
+        if (video == null) {
+            return null;
+        }
+        String name = video.getFileName().toString();
+        int dot = name.lastIndexOf('.');
+        String base = dot >= 0 ? name.substring(0, dot) : name;
+        Path candidate = video.resolveSibling(base + ".wav");
+        return Files.isRegularFile(candidate) ? candidate : null;
     }
 
     /**
